@@ -1,0 +1,178 @@
+USE AdventureWorks2019;
+GO
+
+--Select statement to view all three tables--
+SELECT * FROM Person.Person;
+SELECT * FROM HumanResources.EmployeePayHistory;
+SELECT * FROM HumanResources.Employee;
+
+--Create Joins using the tables above--
+SELECT p.BusinessEntityID,
+	p.PersonType,
+	p.FirstName,
+	p.MiddleName,
+	p.LastName,
+	h.Rate,
+	e.OrganizationLevel,
+	e.JobTitle,
+	e.BirthDate,
+	e.MaritalStatus,
+	e.Gender,
+	e.VacationHours,
+	e.SickLeaveHours
+FROM Person.Person p
+INNER JOIN HumanResources.EmployeePayHistory h
+ON p.BusinessEntityID = h.BusinessEntityID
+INNER JOIN HumanResources.Employee e 
+ON h.BusinessEntityID = e.BusinessEntityID;
+
+--Using ROW_NUMBER() to rank rows--
+SELECT p.BusinessEntityID,
+	p.PersonType,
+	p.FirstName,
+	p.MiddleName,
+	p.LastName,
+	h.Rate,
+	e.OrganizationLevel,
+	e.JobTitle,
+	e.BirthDate,
+	e.MaritalStatus,
+	e.Gender,
+	e.VacationHours,
+	e.SickLeaveHours,
+	ROW_NUMBER() OVER(ORDER BY h.Rate DESC) AS PayRateRank
+	--RANK() OVER(ORDER BY h.Rate DESC) AS PayRateWithRank,
+	--DENSE_RANK() OVER(ORDER BY h.Rate DESC) AS PayRateWithDenseRank,
+	--NTILE(5) OVER(ORDER BY h.Rate) AS PayNtile
+FROM Person.Person p
+INNER JOIN HumanResources.EmployeePayHistory h
+ON p.BusinessEntityID = h.BusinessEntityID
+INNER JOIN HumanResources.Employee e 
+ON h.BusinessEntityID = e.BusinessEntityID;
+
+--RANK--
+SELECT p.BusinessEntityID,
+	p.PersonType,
+	p.FirstName,
+	p.MiddleName,
+	p.LastName,
+	h.Rate,
+	e.OrganizationLevel,
+	e.JobTitle,
+	e.BirthDate,
+	e.MaritalStatus,
+	e.Gender,
+	e.VacationHours,
+	e.SickLeaveHours,
+	--ROW_NUMBER() OVER(ORDER BY h.Rate DESC) AS PayRateRank
+	RANK() OVER(ORDER BY h.Rate DESC) AS PayRateWithRank
+	--DENSE_RANK() OVER(ORDER BY h.Rate DESC) AS PayRateWithDenseRank,
+	--NTILE(5) OVER(ORDER BY h.Rate) AS PayNtile
+FROM Person.Person p
+INNER JOIN HumanResources.EmployeePayHistory h
+ON p.BusinessEntityID = h.BusinessEntityID
+INNER JOIN HumanResources.Employee e 
+ON h.BusinessEntityID = e.BusinessEntityID;
+
+--DENSE_RANK--
+SELECT p.BusinessEntityID,
+	p.PersonType,
+	p.FirstName,
+	p.MiddleName,
+	p.LastName,
+	h.Rate,
+	e.OrganizationLevel,
+	e.JobTitle,
+	e.BirthDate,
+	e.MaritalStatus,
+	e.Gender,
+	e.VacationHours,
+	e.SickLeaveHours,
+	--ROW_NUMBER() OVER(ORDER BY h.Rate DESC) AS PayRateRank,
+	--RANK() OVER(ORDER BY h.Rate DESC) AS PayRateWithRank,
+	DENSE_RANK() OVER(ORDER BY h.Rate DESC) AS PayRateWithDenseRank
+	--NTILE(5) OVER(ORDER BY h.Rate) AS PayNtile
+FROM Person.Person p
+INNER JOIN HumanResources.EmployeePayHistory h
+ON p.BusinessEntityID = h.BusinessEntityID
+INNER JOIN HumanResources.Employee e 
+ON h.BusinessEntityID = e.BusinessEntityID;
+
+--NTILE--
+SELECT p.BusinessEntityID,
+	p.PersonType,
+	p.FirstName,
+	p.MiddleName,
+	p.LastName,
+	h.Rate,
+	e.OrganizationLevel,
+	e.JobTitle,
+	e.BirthDate,
+	e.MaritalStatus,
+	e.Gender,
+	e.VacationHours,
+	e.SickLeaveHours,
+	--ROW_NUMBER() OVER(ORDER BY h.Rate DESC) AS PayRateRank,
+	--RANK() OVER(ORDER BY h.Rate DESC) AS PayRateWithRank,
+	--DENSE_RANK() OVER(ORDER BY h.Rate DESC) AS PayRateWithDenseRank
+	NTILE(5) OVER(ORDER BY h.Rate) AS PayNtile
+FROM Person.Person p
+INNER JOIN HumanResources.EmployeePayHistory h
+ON p.BusinessEntityID = h.BusinessEntityID
+INNER JOIN HumanResources.Employee e 
+ON h.BusinessEntityID = e.BusinessEntityID;
+
+--Combining window functions with a subquery--
+SELECT *
+FROM
+(SELECT p.BusinessEntityID,
+	p.PersonType,
+	p.FirstName,
+	p.MiddleName,
+	p.LastName,
+	h.Rate,
+	e.OrganizationLevel,
+	e.JobTitle,
+	e.BirthDate,
+	e.MaritalStatus,
+	e.Gender,
+	e.VacationHours,
+	e.SickLeaveHours,
+	ROW_NUMBER() OVER(PARTITION BY JobTitle ORDER BY h.Rate DESC) AS PayRateRank,
+	RANK() OVER(PARTITION BY p.BusinessEntityID ORDER BY h.Rate DESC) AS PayRateWithRank,
+	DENSE_RANK() OVER(ORDER BY h.Rate DESC) AS PayRateWithDenseRank,
+	NTILE(5) OVER(ORDER BY h.Rate) AS PayNtile
+FROM Person.Person p
+INNER JOIN HumanResources.EmployeePayHistory h
+ON p.BusinessEntityID = h.BusinessEntityID
+INNER JOIN HumanResources.Employee e 
+ON h.BusinessEntityID = e.BusinessEntityID) AS Top3
+WHERE PayRateRank <= 3
+;
+
+--Combining window functions with a subquery--
+SELECT * FROM
+(SELECT p.BusinessEntityID,
+	p.PersonType,
+	p.FirstName,
+	p.MiddleName,
+	p.LastName,
+	h.Rate,
+	e.OrganizationLevel,
+	e.JobTitle,
+	e.BirthDate,
+	e.MaritalStatus,
+	e.Gender,
+	e.VacationHours,
+	e.SickLeaveHours,
+	--ROW_NUMBER() OVER(PARTITION BY JobTitle ORDER BY h.Rate DESC) AS PayRateRank
+	RANK() OVER(PARTITION BY JobTitle ORDER BY h.Rate DESC) AS PayRateWithRank
+	--DENSE_RANK() OVER(ORDER BY h.Rate DESC) AS PayRateWithDenseRank,
+	--NTILE(5) OVER(ORDER BY h.Rate) AS PayNtile
+FROM Person.Person p
+INNER JOIN HumanResources.EmployeePayHistory h
+ON p.BusinessEntityID = h.BusinessEntityID
+INNER JOIN HumanResources.Employee e 
+ON h.BusinessEntityID = e.BusinessEntityID) AS X
+WHERE PayRateWithRank < 4
+;
