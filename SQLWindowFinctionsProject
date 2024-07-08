@@ -174,5 +174,5 @@ INNER JOIN HumanResources.EmployeePayHistory h
 ON p.BusinessEntityID = h.BusinessEntityID
 INNER JOIN HumanResources.Employee e 
 ON h.BusinessEntityID = e.BusinessEntityID) AS X
-WHERE PayRateWithRank < 4
+WHERE PayRateWithRank < 5
 ;
